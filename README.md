@@ -14,20 +14,34 @@
 
 | 命令 | 说明 |
 | --- | --- |
-| `dbx date diff <date1> <date2>` | 计算两个日期 (`YYYY-MM-DD`) 相隔的天数 |
+| `dbx date diff <date1> <date2>` | 输出 `date2 - date1` 的整数天数差，可为负数；输入格式 `YYYY-MM-DD` |
 
-示例：
+示例 —— 成功路径只输出一个整数，便于脚本捕获：
 
 ```bash
+# date2 > date1 → 正数
+$ dbx date diff 2024-08-13 2026-05-13
+638
+
+# date2 < date1 → 负数
 $ dbx date diff 2026-05-13 2024-08-13
-[dbx] 2026-05-13 和 2024-08-13 相隔 638 天
+-638
+
+# 同一天 → 0
+$ dbx date diff 2026-05-13 2026-05-13
+0
+
+# 直接拿来做脚本里的算术
+days=$(dbx date diff 2026-01-01 "$(date +%Y-%m-%d)")
 ```
 
-输入格式错误会给出友好提示并以非零退出码退出：
+输入格式错误会写到 stderr 并以非零退出码退出：
 
 ```bash
 $ dbx date diff 2026-05-13 oops
 [dbx] 错误：日期格式不正确，要求 YYYY-MM-DD (收到 '2026-05-13' 与 'oops')
+$ echo $?
+1
 ```
 
 ## 环境要求
@@ -52,7 +66,7 @@ ln -sf "$(pwd)/bin/dbx" ~/local/bin/dbx
 
 # 4) 验证
 dbx --help
-dbx date diff 2026-05-13 2024-08-13
+dbx date diff 2024-08-13 2026-05-13   # → 638
 ```
 
 > 提示：如果你习惯使用 `~/.local/bin`（多数发行版的默认约定），把上面命令里的路径相应替换即可。
@@ -61,20 +75,28 @@ dbx date diff 2026-05-13 2024-08-13
 
 ```
 developer-toolbox/
-├── pyproject.toml          # 项目元数据 (requires-python >= 3.11)
-├── .python-version         # uv 固定的解释器版本
+├── pyproject.toml             # 项目元数据 (requires-python >= 3.11) + pytest 配置
+├── .python-version            # uv 固定的解释器版本
+├── .github/
+│   └── workflows/
+│       └── test.yml           # GitHub Actions: ubuntu / macos 上跑 pytest
 ├── bin/
-│   └── dbx                 # bash 入口包装：跟随软链接 + uv run
-└── src/
-    └── dbx/
-        ├── __init__.py     # 版本号
-        ├── __main__.py     # 支持 `python -m dbx`
-        ├── cli.py          # 主入口：自动发现并注册 commands/ 下的子命令组
-        └── commands/
-            ├── __init__.py
-            └── date/       # 子命令组 (group)
-                ├── __init__.py   # 注册 group 并装配各 action
-                └── diff.py       # 具体的 action 实现
+│   └── dbx                    # bash 入口包装：跟随软链接 + uv run
+├── src/
+│   └── dbx/
+│       ├── __init__.py        # 版本号
+│       ├── __main__.py        # 支持 `python -m dbx`
+│       ├── cli.py             # 主入口：自动发现并注册 commands/ 下的子命令组
+│       └── commands/
+│           ├── __init__.py
+│           └── date/          # 子命令组 (group)
+│               ├── __init__.py    # 注册 group 并装配各 action
+│               └── diff.py        # 具体的 action 实现
+└── tests/                     # 测试目录，按 src/dbx/ 层级一对一镜像
+    ├── test_cli.py
+    └── commands/
+        └── date/
+            └── test_diff.py
 ```
 
 ## 扩展指南
@@ -146,13 +168,14 @@ def register(subparsers: argparse._SubParsersAction) -> None:
 - 每个 group 是 `commands/` 下的一个**包**（带 `__init__.py`）。
 - 每个 group 的 `__init__.py` 必须实现 `register(subparsers)` 函数，向其追加自己的 `add_parser(...)`。
 - 每个 action 通过 `parser.set_defaults(handler=...)` 注册处理函数；`handler(args)` 返回退出码（`None` 视为 `0`）。
+- 新增 action / group 时，请在 `tests/` 下按相同层级补充测试（例如 `tests/commands/string/test_upper.py`）。
 
 ## 开发与调试
 
 直接通过 `python -m dbx` 也可以运行，方便在 IDE 里打断点：
 
 ```bash
-uv run python -m dbx date diff 2026-05-13 2024-08-13
+uv run python -m dbx date diff 2024-08-13 2026-05-13
 ```
 
 查看版本：
@@ -160,6 +183,19 @@ uv run python -m dbx date diff 2026-05-13 2024-08-13
 ```bash
 dbx --version    # → dbx 0.1.0
 ```
+
+### 运行测试
+
+测试基于 pytest 9，由 uv 在 dev 依赖组中管理。首次运行前确保 dev 依赖已同步：
+
+```bash
+uv sync                           # 默认会装上 dev 组
+uv run pytest                     # 跑全部测试
+uv run pytest tests/commands/date # 只跑某个子目录
+uv run pytest -k diff -v          # 按关键字筛选 + 详细输出
+```
+
+每次 push 到 `main` 或开 Pull Request 时，GitHub Actions 会在 `ubuntu-latest` 与 `macos-latest` 上自动跑同一套测试 (`.github/workflows/test.yml`)。
 
 ## License
 
