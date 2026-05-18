@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 
-from . import add, diff, from_ts
+from . import add, diff, from_ts, to_ts
 
 
 def register(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -14,3 +14,4 @@ def register(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) ->
     diff.register(actions)
     add.register(actions)
     from_ts.register(actions)
+    to_ts.register(actions)
