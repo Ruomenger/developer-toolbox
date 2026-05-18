@@ -54,15 +54,13 @@ def test_add_negative_across_year_boundary(capsys: pytest.CaptureFixture[str]) -
     "bad_date",
     [
         "not-a-date",
-        "2026/05/04",   # 错误分隔符
-        "2026-13-01",   # 非法月份
-        "2026-02-30",   # 该日期不存在
-        "26-05-04",     # 年份位数不对
+        "2026/05/04",  # 错误分隔符
+        "2026-13-01",  # 非法月份
+        "2026-02-30",  # 该日期不存在
+        "26-05-04",  # 年份位数不对
     ],
 )
-def test_add_invalid_date_format(
-    capsys: pytest.CaptureFixture[str], bad_date: str
-) -> None:
+def test_add_invalid_date_format(capsys: pytest.CaptureFixture[str], bad_date: str) -> None:
     code, out, err = _run(capsys, "date", "add", bad_date, "1")
     assert code == 1
     assert out == ""
