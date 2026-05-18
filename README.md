@@ -21,6 +21,8 @@
 | --- | --- |
 | `dbx date diff <date1> <date2>` | 输出 `date2 - date1` 的整数天数差，可为负数；输入格式 `YYYY-MM-DD` |
 | `dbx date add <date> <±days>` | 输出 `date` 偏移 `days` 天后的日期；`days` 为整数，可正可负 |
+| `dbx date from-ts <timestamp>` | 将时间戳（秒/毫秒/微秒）转换为可读日期时间；单位可自动推断或通过 `-u` 指定 |
+| `dbx date to-ts [datetime_str ...]` | 将日期时间字符串转换为时间戳；不传参数时默认输出当前时间 |
 
 示例 —— 成功路径只输出一个整数，便于脚本捕获：
 
@@ -66,6 +68,66 @@ $ dbx date add 2024-02-28 1
 2024-02-29
 $ dbx date add 2025-12-31 1
 2026-01-01
+```
+
+`dbx date from-ts` 将时间戳转换为可读日期时间：
+
+```bash
+# 秒级时间戳（默认 auto 推断单位），使用系统时区
+$ dbx date from-ts 1716044394
+2024-05-18 22:59:54
+
+# 指定时区
+$ dbx date from-ts --tz UTC 1716044394
+2024-05-18 14:59:54
+
+# 毫秒 / 微秒级时间戳（auto 根据位数自动推断）
+$ dbx date from-ts 1716044394000
+2024-05-18 22:59:54
+$ dbx date from-ts 1716044394000000
+2024-05-18 22:59:54
+
+# 显式指定单位
+$ dbx date from-ts -u ms 1716044394000
+2024-05-18 22:59:54
+
+# 自定义输出格式
+$ dbx date from-ts --tz UTC -f "%Y/%m/%d" 1716044394
+2024/05/18
+
+# 强制 ISO 8601 输出
+$ dbx date from-ts --tz UTC --iso 1716044394
+2024-05-18T14:59:54+00:00
+```
+
+`dbx date to-ts` 将日期时间字符串转换为时间戳，与 `from-ts` 互为逆运算：
+
+```bash
+# 不带参数 → 当前时间戳（秒）
+$ dbx date to-ts
+1716044394
+
+# 日期时间字符串（无引号，空格分隔也支持）
+$ dbx date to-ts --tz UTC 2024-05-18 14:59:54
+1716044394
+
+# ISO 8601 格式（自带时区信息，--tz 会被忽略）
+$ dbx date to-ts 2024-05-18T14:59:54+08:00
+1716044394
+
+# 输出毫秒 / 微秒
+$ dbx date to-ts -u ms --tz UTC 2024-05-18T14:59:54
+1716044394000
+$ dbx date to-ts -u us --tz UTC 2024-05-18T14:59:54
+1716044394000000
+
+# 指定时区
+$ dbx date to-ts --tz Asia/Shanghai 2024-05-18 22:59:54
+1716044394
+
+# 显式指定解析格式
+$ dbx date to-ts --tz UTC -f "%d/%m/%Y %H:%M:%S" 18/05/2024 14:59:54
+1716044394
 ```
 
 ## 环境要求
@@ -116,13 +178,17 @@ developer-toolbox/
 │           └── date/          # 子命令组 (group)
 │               ├── __init__.py    # 注册 group 并装配各 action
 │               ├── diff.py        # action: 计算日期差
-│               └── add.py         # action: 日期偏移
+│               ├── add.py         # action: 日期偏移
+│               ├── from_ts.py     # action: 时间戳 → 日期时间
+│               └── to_ts.py       # action: 日期时间 → 时间戳
 └── tests/                     # 测试目录，按 src/dbx/ 层级一对一镜像
     ├── test_cli.py
     └── commands/
         └── date/
             ├── test_diff.py
-            └── test_add.py
+            ├── test_add.py
+            ├── test_from_ts.py
+            └── test_to_ts.py
 ```
 
 ## 扩展指南
