@@ -1,0 +1,16 @@
+[project]
+name = "developer-toolbox"
+version = "0.1.0"
+description = "开发者日常工具箱 CLI (dbx)"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+dbx = "dbx.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dbx"]

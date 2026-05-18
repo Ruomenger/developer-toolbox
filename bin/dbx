@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# dbx — developer-toolbox CLI 入口。
+# 通过 `uv run` 在仓库目录下启动，自动解析符号链接，
+# 因此可以安全地从 ~/local/bin/dbx 软链接到本文件。
+set -euo pipefail
+
+# 解析符号链接，定位到实际的脚本目录
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+REPO_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd)"
+
+exec uv run --quiet --project "$REPO_ROOT" python -m dbx "$@"
