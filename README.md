@@ -20,6 +20,7 @@
 | 命令 | 说明 |
 | --- | --- |
 | `dbx date diff <date1> <date2>` | 输出 `date2 - date1` 的整数天数差，可为负数；输入格式 `YYYY-MM-DD` |
+| `dbx date add <date> <±days>` | 输出 `date` 偏移 `days` 天后的日期；`days` 为整数，可正可负 |
 
 示例 —— 成功路径只输出一个整数，便于脚本捕获：
 
@@ -47,6 +48,24 @@ $ dbx date diff 2026-05-13 oops
 [dbx] 错误：日期格式不正确，要求 YYYY-MM-DD (收到 '2026-05-13' 与 'oops')
 $ echo $?
 1
+```
+
+`dbx date add` 输出偏移后的日期，与 `diff` 互为逆运算：
+
+```bash
+# 30 天后
+$ dbx date add 2026-05-04 30
+2026-06-03
+
+# 30 天前 (负数)
+$ dbx date add 2026-05-04 -30
+2026-04-04
+
+# 跨闰日 / 跨年都正确处理
+$ dbx date add 2024-02-28 1
+2024-02-29
+$ dbx date add 2025-12-31 1
+2026-01-01
 ```
 
 ## 环境要求
@@ -96,12 +115,14 @@ developer-toolbox/
 │           ├── __init__.py
 │           └── date/          # 子命令组 (group)
 │               ├── __init__.py    # 注册 group 并装配各 action
-│               └── diff.py        # 具体的 action 实现
+│               ├── diff.py        # action: 计算日期差
+│               └── add.py         # action: 日期偏移
 └── tests/                     # 测试目录，按 src/dbx/ 层级一对一镜像
     ├── test_cli.py
     └── commands/
         └── date/
-            └── test_diff.py
+            ├── test_diff.py
+            └── test_add.py
 ```
 
 ## 扩展指南

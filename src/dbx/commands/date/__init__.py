@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 
-from . import diff
+from . import add, diff
 
 
 def register(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -12,3 +12,4 @@ def register(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) ->
     actions = group.add_subparsers(dest="action", metavar="<action>")
     actions.required = True
     diff.register(actions)
+    add.register(actions)
