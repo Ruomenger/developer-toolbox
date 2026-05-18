@@ -12,8 +12,8 @@ _FORMAT = "%Y-%m-%d"
 def register(subparsers: argparse._SubParsersAction) -> None:
     parser = subparsers.add_parser(
         "diff",
-        help="计算两个日期相隔的天数",
-        description="计算 <date1> 与 <date2> 相隔的天数 (输入格式：YYYY-MM-DD)。",
+        help="计算两个日期相隔的天数 (date2 - date1)",
+        description="计算 <date2> - <date1> 的天数差，可为负数 (输入格式：YYYY-MM-DD)。",
     )
     parser.add_argument("date1", help="日期一，格式 YYYY-MM-DD")
     parser.add_argument("date2", help="日期二，格式 YYYY-MM-DD")
@@ -35,6 +35,5 @@ def run(args: argparse.Namespace) -> int:
         )
         return 1
 
-    days = abs((d2 - d1).days)
-    print(f"[dbx] {args.date1} 和 {args.date2} 相隔 {days} 天")
+    print((d2 - d1).days)
     return 0
