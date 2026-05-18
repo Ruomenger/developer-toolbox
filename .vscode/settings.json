@@ -1,0 +1,37 @@
+{
+  // 资源管理器里隐藏 Python / 测试 / lint 工具生成的缓存目录与虚拟环境
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/.coverage": true,
+    "**/.coverage.*": true,
+    "**/htmlcov": true,
+    "**/coverage.xml": true,
+    "**/.venv": true
+  },
+
+  // 全局搜索也跳过，并顺手过滤 .venv 与 uv.lock 防止误命中
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/.coverage": true,
+    "**/htmlcov": true,
+    "**/coverage.xml": true,
+    "**/.venv": true,
+    "uv.lock": true
+  },
+
+  // 文件监听跳过，避免大量缓存文件打满 fs watcher
+  "files.watcherExclude": {
+    "**/__pycache__/**": true,
+    "**/.pytest_cache/**": true,
+    "**/.mypy_cache/**": true,
+    "**/.ruff_cache/**": true,
+    "**/.venv/**": true
+  }
+}
