@@ -48,9 +48,8 @@ def test_build_parser_autodiscovers_date_group() -> None:
     """直接验证自动注册机制：不依赖 main(), 检查 parser 内部结构。"""
     parser = build_parser()
     # 找到顶层 subparsers 中的 group 名字
-    subparsers_actions = [
-        a for a in parser._actions if a.__class__.__name__ == "_SubParsersAction"
-    ]
+    subparsers_actions = [a for a in parser._actions if a.__class__.__name__ == "_SubParsersAction"]
     assert subparsers_actions, "主 parser 应当存在 subparsers"
-    group_names = set(subparsers_actions[0].choices.keys())
-    assert "date" in group_names
+    choices = subparsers_actions[0].choices
+    assert choices is not None
+    assert "date" in choices

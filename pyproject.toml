@@ -17,13 +17,47 @@ packages = ["src/dbx"]
 
 [dependency-groups]
 dev = [
+    "mypy==2.1.0",
     "pytest==9.0.3",
+    "ruff==0.15.13",
 ]
 
 [tool.pytest.ini_options]
 minversion = "9.0"
 testpaths = ["tests"]
 addopts = "-ra --strict-markers --strict-config --import-mode=importlib"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific rules
+]
+# 关闭对中文标点 / 全角符号的 confusable 警告，避免与中文文档/注释/字符串冲突。
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+# 测试里允许调用 argparse 的私有属性来断言内部结构
+"tests/**" = ["SLF001"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src", "tests"]
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+
 
 # 项目级 index，覆盖任何用户级 uv 配置 (例如本地的 USTC 镜像)。
 # 这样 uv.lock 里写入的是 pypi.org 的 URL，CI / 其它贡献者都能直接拉到。

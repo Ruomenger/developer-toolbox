@@ -9,7 +9,7 @@ from datetime import date, datetime
 _FORMAT = "%Y-%m-%d"
 
 
-def register(subparsers: argparse._SubParsersAction) -> None:
+def register(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     parser = subparsers.add_parser(
         "diff",
         help="计算两个日期相隔的天数 (date2 - date1)",

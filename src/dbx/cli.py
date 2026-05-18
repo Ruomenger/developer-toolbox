@@ -5,13 +5,16 @@ from __future__ import annotations
 import argparse
 import importlib
 import pkgutil
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol, cast
 
 from . import __version__, commands
 
+if TYPE_CHECKING:
+    SubParsers = argparse._SubParsersAction[argparse.ArgumentParser]
+
 
 class _CommandModule(Protocol):
-    def register(self, subparsers: argparse._SubParsersAction) -> None: ...
+    def register(self, subparsers: SubParsers) -> None: ...
 
 
 def _discover_groups() -> list[_CommandModule]:
@@ -19,7 +22,7 @@ def _discover_groups() -> list[_CommandModule]:
     for info in pkgutil.iter_modules(commands.__path__):
         module = importlib.import_module(f"{commands.__name__}.{info.name}")
         if hasattr(module, "register"):
-            found.append(module)  # type: ignore[arg-type]
+            found.append(cast(_CommandModule, module))
     return found
 
 
