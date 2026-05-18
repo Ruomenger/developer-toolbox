@@ -1,5 +1,10 @@
 # developer-toolbox (`dbx`)
 
+[![CI](https://github.com/Ruomenger/developer-toolbox/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Ruomenger/developer-toolbox/actions/workflows/test.yml)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
+[![License](https://img.shields.io/github/license/Ruomenger/developer-toolbox.svg)](./LICENSE)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+
 一个可扩展的命令行工具箱，统一收纳日常开发中零散的辅助命令。基于 Python 3.11 + `uv`，采用子命令架构，新增功能时无需改动主入口。
 
 ## 功能特性
@@ -190,12 +195,25 @@ dbx --version    # → dbx 0.1.0
 
 ```bash
 uv sync                           # 默认会装上 dev 组
-uv run pytest                     # 跑全部测试
+uv run pytest                     # 跑全部测试 (默认输出 coverage 报告)
 uv run pytest tests/commands/date # 只跑某个子目录
 uv run pytest -k diff -v          # 按关键字筛选 + 详细输出
+uv run pytest --no-cov            # 临时关掉 coverage 提速
 ```
 
-每次 push 到 `main` 或开 Pull Request 时，GitHub Actions 会在 `ubuntu-latest` 与 `macos-latest` 上自动跑同一套测试 (`.github/workflows/test.yml`)。
+每次 push 到 `main` 或开 Pull Request 时，GitHub Actions 会在 `ubuntu-latest` 与 `macos-latest` 上自动跑同一套测试 (`.github/workflows/test.yml`)，外加 `ruff` / `mypy` 两个独立 job。
+
+### 代码质量与 pre-commit
+
+仓库配了 `.pre-commit-config.yaml`，hooks 直接复用项目级钉版的 ruff / mypy，与 CI 完全同源。建议克隆后开启一次本地 hook：
+
+```bash
+uv sync                            # 装上 pre-commit
+uv run pre-commit install          # 装 git hook，之后 git commit 时自动跑
+uv run pre-commit run --all-files  # 也可以手动一次性扫全仓
+```
+
+依赖升级由 `.github/dependabot.yml` 接管，每周一开 PR 升级 Python dev 工具链与 GitHub Actions 版本（`uv` / `github-actions` 两个 ecosystem）。
 
 ## License
 
